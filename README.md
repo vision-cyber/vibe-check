@@ -1,3 +1,13 @@
+# Vibe Check
+
+Translate text between normal language and Gen Z slang with AI-powered vibe stats. Switch between modern slang and 2016 era modes.
+
+## Tech Stack
+- React
+- TypeScript
+- Vite
+- Google Gemini AI
+- Recharts
 
 ## Run Locally
 
