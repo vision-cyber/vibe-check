@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { Translation, EraMode } from './types';
+import { Translation, EraMode, TranslationDirection } from './types';
 import { translateToEra } from './services/geminiService';
 import VibeMeter from './components/VibeMeter';
 import HistoryList from './components/HistoryList';
@@ -13,6 +13,7 @@ const App: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [era, setEra] = useState<EraMode>('modern');
+  const [direction, setDirection] = useState<TranslationDirection>('to-slang');
 
   // Load history from local storage on mount
   useEffect(() => {
@@ -39,7 +40,7 @@ const App: React.FC = () => {
     setResult(null);
 
     try {
-      const response = await translateToEra(inputText, era);
+      const response = await translateToEra(inputText, era, direction);
       
       const newTranslation: Translation = {
         id: Math.random().toString(36).substr(2, 6).toUpperCase(),
@@ -48,6 +49,7 @@ const App: React.FC = () => {
         timestamp: Date.now(),
         vibeStats: response.stats,
         era: era,
+        direction: direction,
       };
 
       setResult(newTranslation);
@@ -70,17 +72,9 @@ const App: React.FC = () => {
   const handleSelectHistory = useCallback((t: Translation) => {
     setResult(t);
     setEra(t.era);
+    setDirection(t.direction || 'to-slang');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
-
-  const handlePaste = async () => {
-    try {
-      const text = await navigator.clipboard.readText();
-      if (text) setInputText(text);
-    } catch (e) {
-      setError("Clipboard access denied. Skill issue.");
-    }
-  };
 
   const toggleEra = (newEra: EraMode) => {
     setEra(newEra);
@@ -141,18 +135,18 @@ const App: React.FC = () => {
             <div className="flex justify-between items-center mb-4 px-2">
               <label className="text-[11px] font-black text-slate-500 uppercase tracking-[0.2em]">Input Feed</label>
               <button 
-                onClick={handlePaste} 
+                onClick={() => setDirection(direction === 'to-slang' ? 'to-normal' : 'to-slang')} 
                 className={`text-[11px] font-black uppercase tracking-[0.2em] transition-colors px-4 py-1.5 rounded-full border ${
                   era === 'modern' ? 'text-cyan-500 bg-cyan-500/5 border-cyan-500/10 hover:text-cyan-300' : 'text-orange-500 bg-orange-500/5 border-orange-500/10 hover:text-orange-300'
                 }`}
               >
-                Paste 📥
+                {direction === 'to-slang' ? '→ Slang' : '→ Normal'}
               </button>
             </div>
             <textarea
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
-              placeholder={`Enter boring text to make it ${era === 'modern' ? 'Skibidi' : 'Lit'}...`}
+              placeholder={direction === 'to-slang' ? `Enter boring text to make it ${era === 'modern' ? 'Skibidi' : 'Lit'}...` : `Enter ${era === 'modern' ? 'Brain Rot' : 'Lit'} text to make it normal...`}
               className={`w-full h-48 md:h-64 xl:h-56 bg-slate-900/40 border-2 rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-8 xl:p-6 text-lg md:text-xl xl:text-lg focus:outline-none focus:bg-slate-900/60 transition-all placeholder:text-slate-800 resize-none shadow-[0_30px_100px_rgba(0,0,0,0.3)] backdrop-blur-3xl text-white font-medium no-scrollbar ${
                 era === 'modern' ? 'border-slate-800/50 focus:border-cyan-500/50' : 'border-slate-800/50 focus:border-orange-500/50'
               }`}

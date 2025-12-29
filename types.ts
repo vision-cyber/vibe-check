@@ -1,5 +1,6 @@
 
 export type EraMode = 'modern' | '2016';
+export type TranslationDirection = 'to-slang' | 'to-normal';
 
 export interface Translation {
   id: string;
@@ -8,6 +9,7 @@ export interface Translation {
   timestamp: number;
   vibeStats: VibeStats;
   era: EraMode;
+  direction: TranslationDirection;
 }
 
 export interface VibeStats {
